@@ -1,0 +1,44 @@
+#define TRIG_PIN 9  // Pin for ultrasonic sensor trigger (if using ultrasonic)
+#define ECHO_PIN 10 // Pin for ultrasonic sensor echo
+#define RELAY_PIN 7 // Pin for relay control
+#define MIN_DISTANCE 20  // Minimum distance in cm (tank empty)
+#define MAX_DISTANCE 5   // Maximum distance in cm (tank full)
+
+void setup() {
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  pinMode(RELAY_PIN, OUTPUT);
+  
+  Serial.begin(9600);
+}
+
+long readDistance() {
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  long duration = pulseIn(ECHO_PIN, HIGH);
+  long distance = duration * 0.034 / 2;
+  return distance;
+}
+
+void loop() {
+  long distance = readDistance();
+  
+  Serial.print("Water level: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+  
+  if (distance > MIN_DISTANCE) {
+    // Turn on the pump if water is below minimum level
+    digitalWrite(RELAY_PIN, HIGH);
+    Serial.println("Pump ON");
+  } else if (distance <= MAX_DISTANCE) {
+    // Turn off the pump if water is above maximum level
+    digitalWrite(RELAY_PIN, LOW);
+    Serial.println("Pump OFF");
+  }
+  
+  delay(2000);  // Wait 2 seconds before taking the next reading
+}
